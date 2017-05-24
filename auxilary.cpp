@@ -122,7 +122,6 @@ void drawPoints(Mat & img,
 //                     max и min первой переменной, второй -- второй.
 // stepsNum          - количество шагов по каждой координате.
 // model             - обученный классификатор
-// predictLabel      - указатель на функцию предсказания для используемого классификатора
 // 
 // ВЫХОД
 // img               - изображение с отрисованными областями
@@ -131,9 +130,9 @@ void drawPartition(cv::Mat & img,
 					std::map<int, cv::Scalar> & classColors,
 					const cv::Mat & dataRanges,
 					const cv::Size stepsNum,
-					cv::Ptr<cv::ml::StatModel> model,
+					cv::Ptr<cv::ml::StatModel> model)
 					//getPredictedClassLabel * predictLabel)
-					PredictionFunction * predictLabel)
+					//PredictionFunction * predictLabel)
 {
     if (dataRanges.cols != 2)
     {
@@ -159,9 +158,10 @@ void drawPartition(cv::Mat & img,
             sample.at<float>(0) = x;
             sample.at<float>(1) = y;
 
-            //int prediction = (*predictLabel)(sample, model);
-			int prediction = predictLabel->predict(sample, *(model.get()));
-            
+			Mat out;
+			model->predict(sample, out);
+			int prediction = out.at<float>(0);
+
             int xImg = (int)((x - dataRanges.at<double>(0, 0)) * scaleX) +
                 border;
             int yImg = img.rows -
@@ -256,13 +256,14 @@ void readDatasetFromFile(Mat & featuresTrain,
         || classesTest.empty());
 }
 
+/*
 int SVMPrediction::predict(const cv::Mat & sample, cv::ml::StatModel & model)
 {
 	int prediction = 0;
 
 	Mat out;
 	model.predict(sample, out);
-	prediction = out.at<int>(0);
+	prediction = out.at<float>(0);
 
 	return prediction;
 }
@@ -273,7 +274,18 @@ int DTreePrediction::predict(const cv::Mat & sample, cv::ml::StatModel & model)
 
 	Mat out;
 	model.predict(sample, out);
-	prediction = out.at<int>(0);
+	prediction = out.at<float>(0);
 
 	return prediction;
 }
+
+int RTreePrediction::predict(const cv::Mat & sample, cv::ml::StatModel & model)
+{
+	int prediction = 0;
+
+	Mat out;
+	model.predict(sample, out);
+	prediction = out.at<float>(0);
+
+	return prediction;
+}*/

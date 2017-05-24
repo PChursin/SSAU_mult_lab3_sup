@@ -36,48 +36,7 @@ void trainDTree(const Mat & trainSamples,
 	Ptr<ml::TrainData> trainData = ml::TrainData::create(trainSamples, ml::ROW_SAMPLE, trainClasses);
 	dtree->train(trainData);
 
-
-
-
-
-
     /* =================================================================== */
-}
-
-
-/*
-// Функция предсказания с помощью дерева решений.
-// 
-// API
-// int getDTreePrediction(const cv::Mat & sample,
-//                        const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученное дерево решений
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getDTreePrediction(const Mat & sample, const cv::ml::StatModel & model)
-{
-    // Приводим тип стат. модели к дереву решений
-    //const CvDTree & dtree = dynamic_cast<const CvDTree &>(model);
-    int prediction = 0;
-    /* =================================================================== */
-    //  Напишите код, запускающий алгоритм предсказания для дерева решений.
-    /* ------------------------------------------------------------------- */
-
-	Mat out;
-	model.predict(sample, out);
-	prediction = out.at<int>(0);
-
-
-
-
-    /* =================================================================== */
-    return prediction;
 }
 
 
@@ -100,16 +59,16 @@ Ptr<ml::DTrees> readDTreeParams()
     // Не строим суррогатные разбиения.
     params->setUseSurrogates(false);
     // Не храним поддеревья, удаленные в ходе обрезки дерева (pruning).
-    params->setTruncatePrunedTree(true);
+    params->setTruncatePrunedTree(false);
     // Параметр алгоритма обрезания дерева.
-    params->setUse1SERule(true);
-
+    params->setUse1SERule(false);
+	
     // Максимальная высота (глубина) дерева.
 	int tmp;
     printf("maximal tree depth = ");
     scanf("%d", &tmp);
 	params->setMaxDepth(tmp);
-
+	
     // Минимальное количество прецедентов обучающей выборке,
     // при котором выполняется дальнейшее разбиение.
     printf("minimal number of samples in leaf = ");
@@ -118,12 +77,13 @@ Ptr<ml::DTrees> readDTreeParams()
 
 
     // Количество блоков в скользящем контроле (cross-validation).
-    int doPruning = 0;
-    printf("apply pruning (0/1) = ");
-    scanf("%d", &(doPruning));
+    //int doPruning = 0;
+    //printf("apply pruning (0/1) = ");
+    //scanf("%d", &(doPruning));
     // Т.к. данных в тестовых задачах немного,
     // используем пятикратный скользящий контроль.
-    params->setCVFolds((doPruning == 0) ? 0 : 5);
+    //params->setCVFolds((doPruning == 0) ? 0 : 5);
+	params->setCVFolds(0);
 
     return params;
 }

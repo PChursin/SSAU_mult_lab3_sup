@@ -4,6 +4,8 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/ml/ml.hpp"
 
+using namespace cv;
+using namespace cv::ml;
 
 /*
 // Функция чтения параметров алгоритма обучения случайного леса с консоли.
@@ -15,7 +17,7 @@
 // Параметры алгоритма обучения случайного леса.
 // 
 */
-CvRTParams readRTreesParams();
+Ptr<RTrees> readRTreesParams();
 
 
 /*
@@ -38,27 +40,10 @@ CvRTParams readRTreesParams();
 */
 void trainRTrees(const cv::Mat & trainSamples,
                 const cv::Mat & trainClasses,
-                const CvRTParams & params,
-                CvRTrees & rtrees);
+				Ptr<RTrees> rtrees);
+                //const CvRTParams & params,
+                //CvRTrees & rtrees);
 
-
-/*
-// Функция предсказания с помощью случайного леса.
-// 
-// API
-// int getRTreesPrediction(const cv::Mat & sample,
-//                         const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученный случайный лес
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getRTreesPrediction(const cv::Mat & sample,
-                        const cv::ml::StatModel & model);
 
 
 #endif

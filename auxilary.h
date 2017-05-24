@@ -7,7 +7,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <map>
-
+/*
 struct PredictionFunction {
 public:
 	virtual int predict(const cv::Mat & sample,
@@ -25,6 +25,12 @@ public:
 	int predict(const cv::Mat & sample,
 		cv::ml::StatModel & model);
 };
+
+struct RTreePrediction : PredictionFunction {
+public:
+	int predict(const cv::Mat & sample,
+		cv::ml::StatModel & model);
+};*/
 
 // Максимальная длина строки с именем файла
 const int maxFileNameLen = 1000;
@@ -77,9 +83,9 @@ void drawPartition(cv::Mat & img,
 	std::map<int, cv::Scalar> & classColors,
 	const cv::Mat & dataRanges,
 	const cv::Size stepsNum,
-	cv::Ptr<cv::ml::StatModel> model,
+	cv::Ptr<cv::ml::StatModel> model);
 	//getPredictedClassLabel * predictLabel);
-	PredictionFunction * predictLabel);
+	//PredictionFunction * predictLabel);
 
 
 /*

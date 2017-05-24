@@ -50,6 +50,8 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <UseIntelIPP>true</UseIntelIPP>
+    <UseIntelTBB>true</UseIntelTBB>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -152,6 +154,8 @@
   <ItemGroup>
     <ClCompile Include="auxilary.cpp" />
     <ClCompile Include="cvdtree.cpp" />
+    <ClCompile Include="cvgbtrees.cpp" />
+    <ClCompile Include="cvrtrees.cpp" />
     <ClCompile Include="cvsvm.cpp" />
     <ClCompile Include="errorMetrics.cpp" />
     <ClCompile Include="main.cpp" />
@@ -159,6 +163,8 @@
   <ItemGroup>
     <ClInclude Include="auxilary.h" />
     <ClInclude Include="cvdtree.h" />
+    <ClInclude Include="cvgbtrees.h" />
+    <ClInclude Include="cvrtrees.h" />
     <ClInclude Include="cvsvm.h" />
     <ClInclude Include="errorMetrics.h" />
   </ItemGroup>

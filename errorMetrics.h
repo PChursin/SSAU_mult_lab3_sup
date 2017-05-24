@@ -25,9 +25,9 @@
 float getClassificationError(const cv::Mat & samples,
 	const cv::Mat & classes,
 	cv::Ptr<cv::ml::StatModel> model,
-	bool test,
+	bool test);
 	//int (*predict) (const cv::Mat & sample,
 	  //       cv::ml::StatModel & model));
-	PredictionFunction * func);
+	//PredictionFunction * func);
 
 #endif

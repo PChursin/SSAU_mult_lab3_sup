@@ -1,6 +1,6 @@
 #include "cvrtrees.h"
-
 using namespace cv;
+using namespace cv::ml;
 
 
 /*
@@ -21,10 +21,9 @@ using namespace cv;
 // ВХОД
 // rtrees        - обученный случайный лес
 */
-void trainRTrees(const Mat & trainSamples,
-                const Mat & trainClasses,
-                const CvRTParams & params,
-                CvRTrees & rtrees)
+void trainRTrees(const cv::Mat & trainSamples,
+	const cv::Mat & trainClasses,
+	Ptr<cv::ml::RTrees> rtrees)
 {
     /* =================================================================== */
     //  Напишите код, запускающий алгоритм обучения случайного леса.
@@ -33,47 +32,12 @@ void trainRTrees(const Mat & trainSamples,
     //  количественные.
     /* ------------------------------------------------------------------- */
 
-
-
-
-
-
-    /* =================================================================== */
-}
-
-
-/*
-// Функция предсказания с помощью случайного леса.
-// 
-// API
-// int getRTreesPrediction(const cv::Mat & sample,
-//                         const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученный случайный лес
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getRTreesPrediction(const Mat & sample,
-                        const cv::ml::StatModel & model)
-{
-    // Приводим тип модели к случайному лесу
-    const CvRTrees & rf = dynamic_cast<const CvRTrees &>(model);
-    int prediction = 0;
-    /* =================================================================== */
-    //  Напишите код, запускающий алгоритм предсказания для случайного леса.
-    /* ------------------------------------------------------------------- */
-
-
-
+	Ptr<ml::TrainData> trainData = ml::TrainData::create(trainSamples, ml::ROW_SAMPLE, trainClasses);
+	rtrees->train(trainData);
 
 
 
     /* =================================================================== */
-    return prediction;
 }
 
 
@@ -87,7 +51,7 @@ int getRTreesPrediction(const Mat & sample,
 // Параметры алгоритма обучения случайного леса.
 // 
 */
-CvRTParams readRTreesParams()
+Ptr<RTrees> readRTreesParams()
 {
     int treeDepth = -1;
     printf("max depth of each tree = ");
@@ -101,7 +65,12 @@ CvRTParams readRTreesParams()
     printf("number of active variables (set 0 to use the sqrt(total number of features)) = ");
     scanf("%d", &(activeVarsNum));
     
-    CvRTParams params(treeDepth, 0, 0.0f, false, 10, 0, false, 0, treesNum, 0.0f, CV_TERMCRIT_ITER);
+	Ptr<RTrees> params = RTrees::create();
+	params->setMaxDepth(treeDepth);
+	params->setActiveVarCount(activeVarsNum);
+	params->setMinSampleCount(0);
+
+    //CvRTParams params(treeDepth, 0, 0.0f, false, 10, 0, false, 0, treesNum, 0.0f, CV_TERMCRIT_ITER);
 
     return params;
 }

@@ -4,6 +4,8 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/ml/ml.hpp"
 
+using namespace cv;
+
 
 /*
 // Функция чтения параметров алгоритма обучения градиентного
@@ -17,7 +19,7 @@
 // деревьев решений.
 // 
 */
-CvGBTreesParams readGBTreesParams();
+Ptr<ml::Boost> readGBTreesParams();
 
 
 /*
@@ -40,29 +42,11 @@ CvGBTreesParams readGBTreesParams();
 // gbtrees        - обученная модель градиентного бустинга
 */
 void trainGBTrees(const cv::Mat & trainSamples,
-                const cv::Mat & trainClasses,
-                const CvGBTreesParams & params,
-                CvGBTrees & gbtrees);
+	const cv::Mat & trainClasses,
+	Ptr<ml::Boost> boost);
+                //const CvGBTreesParams & params,
+                //CvGBTrees & gbtrees);
 
-
-/*
-// Функция предсказания с помощью модель градиентного бустинга
-// деревьев решений.
-// 
-// API
-// int getGBTreesPrediction(const cv::Mat & sample,
-//                         const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученная модель градиентного бустинга
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getGBTreesPrediction(const cv::Mat & sample,
-                        const cv::ml::StatModel & model);
 
 
 #endif

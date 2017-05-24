@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <map>
+#include <fstream>
+#include <iostream>
 #include "opencv2/core/core.hpp"
 #include "opencv2/ml/ml.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "cvsvm.h"
 #include "cvdtree.h"
-//#include "cvrtrees.h"
-//#include "cvgbtrees.h"
+#include "cvrtrees.h"
+#include "cvgbtrees.h"
 #include "auxilary.h"
 #include "errorMetrics.h"
 
@@ -22,7 +24,7 @@ const int maxWinNameLen = 1000;
 const int escCode = 27;
 
 // Перечисление задающее действие выбранное в главном меню
-enum {LOAD_DATA = 0, USE_SVM, USE_DTREE, USE_RTREES, USE_GBTREES};
+enum {LOAD_DATA = 0, USE_SVM, USE_DTREE, USE_RTREES, USE_GBTREES, LOAD_MODEL, SAVE_MODEL};
 
 
 /*
@@ -37,14 +39,16 @@ enum {LOAD_DATA = 0, USE_SVM, USE_DTREE, USE_RTREES, USE_GBTREES};
 int getMainMenuAction()
 {
     int menuItemIdx = -1;
-    const int menuTabsNum = 5;
+    const int menuTabsNum = 7;
     const char* menu[] = 
     {
         "0 - Load data", 
         "1 - Use SVM", 
         "2 - Use decision tree",
         "3 - Use random forest",
-        "4 - Use gradient boosted trees"
+        "4 - Use gradient boosted trees",
+		"5 - Load model",
+		"6 - Save model"
     };
 
     while (true)
@@ -56,10 +60,9 @@ int getMainMenuAction()
             printf("\t%s\n", menu[i]);
         }
         printf("\n");
-        // Выбор пользователя
         printf("Your choice = ");
         scanf("%d", &menuItemIdx);
-        // Проверка на ввыод корректного номера
+        // Проверка на ввод корректного номера
         if (menuItemIdx >= 0 && menuItemIdx < menuTabsNum)
         {
             break;
@@ -98,13 +101,11 @@ int main(int argc, char** argv)
     bool isDataLoaded = false;
 
     int ans;
+	Ptr<ml::StatModel> model;
     do
     {
         // вызов функции выбора пункта меню
         int activeMenuItem = getMainMenuAction();
-        Ptr<ml::StatModel> model;
-        //getPredictedClassLabel * predictFunction;
-		PredictionFunction * predictFunction;
 
         switch (activeMenuItem)
         {
@@ -124,6 +125,7 @@ int main(int argc, char** argv)
                 dtreeModelsNum = 0;
                 rtreesModelsNum = 0;
                 gbtreesModelsNum = 0;
+				model.release();
                 continue;
             }; break;
 
@@ -136,18 +138,21 @@ int main(int argc, char** argv)
                     continue;
                 }
                 // Запрашиваем параметры алгоритма обучения.
-                // CvSVMParams params = readSVMParams();
-				Ptr<ml::SVM> svm = readSVMParams();
-                // Запускаем алгоритм обучения.
-                //CvSVM * svm = new CvSVM;
-                //trainSVM(featuresTrain, classesTrain, params, *svm);
-				Ptr<ml::TrainData> trainData = ml::TrainData::create(featuresTrain, ml::ROW_SAMPLE, classesTrain);
-				svm->trainAuto(trainData);
-				//trainSVM(featuresTrain, classesTrain, svm);
+				printf("Enter 0 to use auto train params, 1 - manual: ");
+				int manual;
+				scanf("%d", &manual);
+				Ptr<ml::SVM> svm = readSVMParams(!manual);
+				if (!manual) {
+					// Запускаем алгоритм обучения.
+					Ptr<ml::TrainData> trainData = ml::TrainData::create(featuresTrain, ml::ROW_SAMPLE, classesTrain);
+					svm->trainAuto(trainData);
+				}
+				else {
+					trainSVM(featuresTrain, classesTrain, svm);
+				}
+
                 sprintf(winName, "SVM #%d\0", svmModelsNum++);
                 model = svm;
-				predictFunction = new SVMPrediction();
-                //predictFunction = getSVMPrediction;
             }; break;
 			
         case USE_DTREE:
@@ -159,21 +164,16 @@ int main(int argc, char** argv)
                     continue;
                 }
 
-                // Запрашиваем параметры алгоритма обучения
-                //CvDTreeParams params = readDTreeParams();
-
-                // Запускаем алгоритм обучения
 				Ptr<ml::DTrees> dtree = readDTreeParams();
-                //CvDTree * dtree = new CvDTree;
+
                 trainDTree(featuresTrain,
                     classesTrain,
 	                dtree);
 
                 sprintf(winName, "Decision tree #%d\0", dtreeModelsNum++);
                 model = dtree;
-                predictFunction = new DTreePrediction();
             }; break;
-			/*
+			
         case USE_RTREES:
             {
                 // Перед выполенением обучения необходимо загрузить данные
@@ -184,16 +184,14 @@ int main(int argc, char** argv)
                 }
 
                 // Запрашиваем параметры алгоритма обучения
-                CvRTParams params = readRTreesParams();
-
-                // Запускаем алгоритм обучения
-                CvRTrees * rtrees = new CvRTrees;
-                trainRTrees(featuresTrain, classesTrain, params, *rtrees);
+                Ptr<ml::RTrees> rtrees = readRTreesParams();
+				// Запускаем алгоритм обучения
+				trainRTrees(featuresTrain, classesTrain, rtrees);
 
                 sprintf(winName, "Random forest #%d\0", rtreesModelsNum++);
                 model = rtrees;
-                predictFunction = getRTreesPrediction;
             }; break;
+			
         case USE_GBTREES:
             {
                 // Перед выполенением обучения необходимо загрузить данные
@@ -204,29 +202,82 @@ int main(int argc, char** argv)
                 }
 
                 // Запрашиваем параметры алгоритма обучения
-                CvGBTreesParams params = readGBTreesParams();
-
+				Ptr<ml::Boost> boost = readGBTreesParams();
                 // Запускаем алгоритм обучения
-                CvGBTrees * gbtrees = new CvGBTrees;
-                trainGBTrees(featuresTrain, classesTrain, params, *gbtrees);
+                trainGBTrees(featuresTrain, classesTrain, boost);
 
                 sprintf(winName, "Gradient boosting #%d\0", gbtreesModelsNum++);
-                model = gbtrees;
-                predictFunction = getGBTreesPrediction;
-            }; break;*/
+                model = boost;
+            }; break;
+		case LOAD_MODEL:
+			{
+				if (!isDataLoaded)
+				{
+					printf("data must be loaded first\n");
+					continue;
+				}
+				char filename[1000];
+				printf("File = ");
+				scanf("%s", &filename);
+				FileStorage fs;
+				fs.open(filename, FileStorage::READ);
+				if (fs.isOpened() == false)
+				{
+					printf("No such file!\n");
+					continue;
+				}
+				std::wfstream file(filename);
+				wchar_t buf[100];
+				file.getline(buf, 100);
+				file.getline(buf, 100);
+				file.getline(buf, 100);
+				std::wcout << buf << std::endl;
+				std::wstring readHead = buf;
+				std::wstring svmHead = L"opencv_ml_svm:";
+				std::wstring dtreeHead = L"opencv_ml_dtree:";
+				std::wstring rtreeHead = L"opencv_ml_rtree:";
+				std::wstring boostHead = L"opencv_ml_boost:";
+				if (readHead == svmHead) {
+					model = ml::StatModel::load<ml::SVM>(filename);
+					sprintf(winName, "SVM #%d\0", svmModelsNum++);
+				}
+				else if (readHead == dtreeHead) {
+					model = ml::StatModel::load<ml::DTrees>(filename);
+					sprintf(winName, "Decision tree #%d\0", dtreeModelsNum++);
+				}
+				else if (readHead == rtreeHead) {
+					model = ml::StatModel::load<ml::RTrees>(filename);
+					sprintf(winName, "Random forest #%d\0", rtreesModelsNum++);
+				}
+				else if (readHead == boostHead) {
+					model = ml::StatModel::load<ml::Boost>(filename);
+					sprintf(winName, "Gradient boosting #%d\0", gbtreesModelsNum++);
+				}
+
+			}break;
+		case SAVE_MODEL:
+		{
+			if (model.get() == NULL) {
+				printf("Train the model first\n");
+				continue;
+			}
+			char filename[1000];
+			printf("File = ");
+			scanf("%s", &filename);
+			model->save(filename);
+			continue;
+		}break;
         }
 
         // Вычисляем ошибки на обучающей и тестовой выборках.
-        float trainError = getClassificationError(featuresTrain,
-            classesTrain,
-            model,
-			false,
-            predictFunction);
-        float testError = getClassificationError(featuresTest,
-            classesTest,
-            model,
-			true,
-            predictFunction);
+		float trainError = getClassificationError(featuresTrain,
+			classesTrain,
+			model,
+			false);
+		float testError = getClassificationError(featuresTest,
+			classesTest,
+			model,
+			true);
         
         printf("========== %s ===========\n", winName);
         printf("error on train set: %.3f\n", trainError);
@@ -238,34 +289,28 @@ int main(int argc, char** argv)
             // Создаем белое изображение с разрешением 400х400
             Mat img(400, 400, CV_8UC3, Scalar(255, 255, 255));
             // Рисуем разбиение пространсва признаков на области
-            drawPartition(img,
-                classColors,
-                getRanges(featuresTest),
-                Size(77, 77),
-                model,
-                predictFunction);
+			drawPartition(img,
+				classColors,
+				getRanges(featuresTest),
+				Size(77, 77),
+				model);
             // Отрисовываем точки тестовой выборки
             drawPoints(img, featuresTest, classesTest, getRanges(featuresTest), classColors, 1);
             // Отрисовываем точки обучающей выборки
             drawPoints(img, featuresTrain, classesTrain, getRanges(featuresTest), classColors, 0);
 
-            //CvSVM * svm = dynamic_cast<CvSVM*>(model);
 			Ptr<ml::SVM> svm = model.dynamicCast<ml::SVM>();
             if (svm)
             {
                 // Отрисовываем опорные векторы
                 Mat supportVectors = getSupportVectors(svm);
                 drawPoints(img, supportVectors, classesTrain, getRanges(featuresTest), classColors, 2);
-                //svm = 0;
             }
             //*/
             // Выводим изображение в новом окне
             namedWindow(winName);
             imshow(winName, img);
         }
-        //delete model;
-        //model = 0;
-        predictFunction = 0;
 
         printf("Do you want to continue? ESC - exit\n");
         // Ожидаем нажатия клавиши в графическом окне.

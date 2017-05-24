@@ -42,24 +42,4 @@ void trainDTree(const cv::Mat & trainSamples,
 	const cv::Ptr<ml::DTrees> params);
                 //CvDTree & dtree);
 
-
-/*
-// Функция предсказания с помощью дерева решений.
-// 
-// API
-// int getDTreePrediction(const cv::Mat & sample,
-//                        const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученное дерево решений
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getDTreePrediction(const cv::Mat & sample,
-                       const cv::ml::StatModel & model);
-
-
 #endif

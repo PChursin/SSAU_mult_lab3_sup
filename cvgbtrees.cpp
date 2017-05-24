@@ -23,9 +23,10 @@ using namespace cv;
 // gbtrees        - обученная модель градиентного бустинга
 */
 void trainGBTrees(const cv::Mat & trainSamples,
-                const cv::Mat & trainClasses,
-                const CvGBTreesParams & params,
-                CvGBTrees & gbtrees)
+	const cv::Mat & trainClasses,
+	Ptr<ml::Boost> boost)
+                //const CvGBTreesParams & params,
+                //CvGBTrees & gbtrees)
 {
     /* =================================================================== */
     //  Напишите код, запускающий алгоритм обучения градиентного бустинга
@@ -34,51 +35,10 @@ void trainGBTrees(const cv::Mat & trainSamples,
     //  и все признаки, пропущенных значений нет, все признаки кроме целевого
     //  количественные.
     /* ------------------------------------------------------------------- */
-
-
-
-
-
-
-
+	Ptr<ml::TrainData> trainData = ml::TrainData::create(trainSamples, ml::ROW_SAMPLE, trainClasses);
+	boost->train(trainData);
     /* =================================================================== */
 }
-
-
-/*
-// Функция предсказания с помощью модель градиентного бустинга
-// деревьев решений.
-// 
-// API
-// int getGBTreesPrediction(const cv::Mat & sample,
-//                         const cv::ml::StatModel & model)
-// 
-// ВХОД
-// sample  - матрица, содержащая координаты одной точки
-//           в пространстве признаков
-// model   - обученная модель градиентного бустинга
-// 
-// РЕЗУЛЬТАТ
-// Предсказанный класс
-*/
-int getGBTreesPrediction(const cv::Mat & sample,
-                        const cv::ml::StatModel & model)
-{
-    // Приводим тип модели к случайному лесу
-    const CvGBTrees & gbtrees = dynamic_cast<const CvGBTrees &>(model);
-    int prediction = 0;
-    /* =================================================================== */
-    //  Напишите код, запускающий алгоритм предсказания для случайного леса.
-    /* ------------------------------------------------------------------- */
-
-
-
-
-
-    /* =================================================================== */
-    return prediction;
-}
-
 
 /*
 // Функция чтения параметров алгоритма обучения градиентного
@@ -92,7 +52,7 @@ int getGBTreesPrediction(const cv::Mat & sample,
 // деревьев решений.
 // 
 */
-CvGBTreesParams readGBTreesParams()
+Ptr<ml::Boost> readGBTreesParams()
 {
     int treeDepth = -1;
     printf("max depth of each tree = ");
@@ -101,21 +61,28 @@ CvGBTreesParams readGBTreesParams()
     int treesNum = -1;
     printf("number of trees to build = ");
     scanf("%d", &(treesNum));
-
+	/*
     float learningRate = 0.0f;
     printf("learning rate (shrinkage) = ");
     scanf("%f", &(learningRate));
 
     float subsamplePortion = 0.0f;
     printf("subsample portion = ");
-    scanf("%f", &(subsamplePortion));
+    scanf("%f", &(subsamplePortion));*/
     
+	Ptr<ml::Boost> boost = ml::Boost::create();
+	boost->setMaxDepth(treeDepth);
+	boost->setWeakCount(treesNum);
+	//boost->setBoostType(ml::Boost::Types::REAL);
+	boost->setUseSurrogates(false);
+	//boost->set
+	/*
     CvGBTreesParams params(CvGBTrees::DEVIANCE_LOSS,
         treesNum,
         learningRate,
         subsamplePortion,
         treeDepth,
-        false);
+        false);*/
 
-    return params;
+    return boost;
 }

@@ -106,7 +106,7 @@ Mat getSupportVectors(const Ptr<ml::SVM> svm)
 // Параметры алгоритма обучения SVM.
 // 
 */
-Ptr<ml::SVM> readSVMParams()
+Ptr<ml::SVM> readSVMParams(bool autoParams)
 {
 	Ptr<cv::ml::SVM> params = cv::ml::SVM::create();
 	params->setType(ml::SVM::C_SVC);
@@ -114,7 +114,9 @@ Ptr<ml::SVM> readSVMParams()
     // Устанавливаем параметры остановки итерационного метода оптимизации
     params->setTermCriteria(
         cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 1000000, 0.0001));
-	/*
+	if (autoParams)
+		return params;
+	
     // Запрашиваем параметр стоимости неправильной классификации
     printf("C = ");
 	double cParam;
@@ -168,7 +170,7 @@ Ptr<ml::SVM> readSVMParams()
 			params->setGamma(gamma);
 			params->setCoef0(coef0);
         }; break;
-    }*/
+    }
 	
 
     return params;

@@ -22,35 +22,34 @@ using namespace cv;
 float getClassificationError(const cv::Mat & samples,
 	const cv::Mat & classes,
 	cv::Ptr<cv::ml::StatModel> model,
-	bool test,
-	//int(*predict) (const cv::Mat & sample,
-	//	cv::ml::StatModel & model))
-	PredictionFunction * func)
+	bool test)
 {
-    float error = 0.0f;
-    /* =================================================================== */
-    //  Напишите код вычисления ошибки классификации.
-    //  Ошибка неправильной классификации вычисляется
-    //  как отношение кол-ва правильно классифицированных
-    //  объектов выборки к общему кол-ву объектов в выборке.
-    //  Для получения предсказания требуется выполнить
-    //  вызов (*predict)(sample, model), результатов которого будет
-    //  номер предсказанного класса.
-    /* ------------------------------------------------------------------- */
+
 	Mat out;
 	Ptr<ml::TrainData> trainData = ml::TrainData::create(samples, ml::ROW_SAMPLE, classes);
+	int nClasses = trainData->getClassLabels().rows;
 
-	model->calcError(trainData, test, out);
-
-	for (int i = 0; i < out.size().area(); i++) {
-		error += out.at<float>(i);
+	int** errors = new int*[nClasses];
+	for (int i = 0; i < nClasses; i++) {
+		errors[i] = new int[nClasses];
+		memset(errors[i], 0, nClasses*sizeof(int));
 	}
 
-	error /= out.size().area();
+	float tmpErr = model->calcError(trainData, test, out);
 
+	for (int i = 0; i < out.rows; i++) {
+		errors[(int)out.at<float>(i)][classes.at<int>(i)]++;
+	}
+	printf("Classification matrix for %s dataset\n", test ? "train" : "test");
+	for (int i = 0; i < nClasses; i++) {
+		for (int j = 0; j < nClasses; j++) {
+			printf("%4d ", errors[i][j]);
+		}
+		printf("\n");
+	}
 
-
-
-    /* =================================================================== */
-    return error;
+	for (int i = 0; i < nClasses; i++)
+		delete[] errors[i];
+	delete errors;
+    return tmpErr;
 }

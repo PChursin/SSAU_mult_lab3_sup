@@ -14,7 +14,7 @@
 // Параметры алгоритма обучения SVM.
 // 
 */
-cv::Ptr<cv::ml::SVM> readSVMParams();
+cv::Ptr<cv::ml::SVM> readSVMParams(bool autoParams);
 //CvSVMParams readSVMParams();
 
 
